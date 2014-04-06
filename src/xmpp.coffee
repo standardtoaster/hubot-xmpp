@@ -78,9 +78,25 @@ class XmppBot extends Adapter
     @client.on 'offline', @.offline
     @client.on 'stanza', @.read
 
+    setInterval @keepalive, 150000
+    @keepalive
+
     @client.on 'end', () =>
       @robot.logger.info 'Connection closed, attempting to reconnect'
       @reconnect()
+
+  keepalive: =>
+    @robot.logger.debug "[xmpp] Sending Ping"
+    ping = new ltx.Element('iq', {
+        id: 'c2s1',
+        type: 'get'
+    }).c('ping', {
+        xmlns: 'urn:xmpp:ping'
+    })
+
+    @robot.logger.debug '[xmpp ping] ' + ping
+
+    @client.send ping
 
   error: (error) =>
       @robot.logger.error "Received error #{error.toString()}"
